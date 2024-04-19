@@ -5,3 +5,4 @@
 2. tiffのマージ
 3. RGBから輝度への変換(Image/color/RGB to liminance)
 4. 色の転換（Edit/Invert）
+5. トラッキング分析（Plugins/tracking/TrackMate）
