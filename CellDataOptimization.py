@@ -21,10 +21,9 @@ input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/
 
 #細胞数
 cells = 72
-AllowableDistance = 1000
 
 # 距離の上限を設定
-distance_threshold = 10000  # 例として上限を10に設定
+distance_threshold = 20  # 例として上限を10に設定
 
 df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除
@@ -46,12 +45,14 @@ cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i 
 
 # print(df['POSITION_T'].max())
 
-for t in range(100):
+for t in range(500):
   print("-------- time ",t," --------")
-  print(len(list(cells_Fixed_value.keys())))
+  print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
+  if len(list(cells_Fixed_value.keys())) == 0:
+    break
   df_temp = df[df['POSITION_T'] == t]
   cells_temp = df_temp.shape[0]
-  print("細胞数",cells_temp)
+  print("現フレームの細胞数:",cells_temp)
   decID = list(cells_Fixed_value.keys()) #使われているかの判定用
   incID = []
   # print(cells_Fixed_value.values())
