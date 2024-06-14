@@ -35,6 +35,7 @@ df = df.sort_values(by=['POSITION_T','TRACK_ID']) #ソート
 use_cells_Fixed_value = list(df[df['POSITION_T']==0]['TRACK_ID'])
 # cells_Fixed_value = {i+1: use_cells_Fixed_value[i] for i in range(0, cells)}
 cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i in range(0, cells)}
+# cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i] , 0] for i in range(0, cells)}
 
 # 確認用
 # cnt = 0 
@@ -45,7 +46,7 @@ cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i 
 
 # print(df['POSITION_T'].max())
 
-for t in range(4):
+for t in range(100):
   print("-------- time ",t," --------")
   print(len(list(cells_Fixed_value.keys())))
   df_temp = df[df['POSITION_T'] == t]
@@ -108,18 +109,25 @@ for t in range(4):
       # 結果をフィルタリングして上限を超えないペアのみをマッチングリストに追加
       matching = [(r, c) for r, c in zip(row_ind, col_ind) if distance_matrix[r, c] < large_value]
     print("マッチング：",matching)
+    diff_list = decID.copy()
 
     for i in matching:
       matching_dec = decID[i[0]]
       matching_inc = incID[i[1]]
-      # print(matching_dec)
-      # cells_Fixed_value[matching_dec] = cells_Fixed_value[matching_dec].append(matching_inc)
-      print(type(cells_Fixed_value[matching_dec]))
-      lit = [1]
-      lit.append(2)
-      print(lit)
-      temp_list = cells_Fixed_value[matching_dec].append(matching_inc)
-      # print(temp_list)
-      # cells_Fixed_value[matching_inc] = cells_Fixed_value.pop(matching_dec)
 
-    # print(cells_Fixed_value)
+      diff_list.remove(matching_dec)
+
+      temp_list = cells_Fixed_value[matching_dec]
+      # temp_list.append([matching_inc,t])
+      temp_list.append(matching_inc)
+      cells_Fixed_value[matching_dec] = temp_list
+      # print(cells_Fixed_value[matching_dec])
+      cells_Fixed_value[matching_inc] = cells_Fixed_value.pop(matching_dec)
+
+    #消えた細胞を削除
+    for i in diff_list:
+      cells_Fixed_value.pop(i)
+
+    #この場合どの細胞を追跡対象にするのか
+
+    print(cells_Fixed_value)
