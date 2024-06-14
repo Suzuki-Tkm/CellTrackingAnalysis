@@ -18,7 +18,7 @@ https://imagej.net/imagej-wiki-static/StarDist
 #### ・使用データ
 | | 実験データ | 回答データ |
 | ---- | ---- | ---- |
-|セルの数| 0-579 | 0-580 |
+|フレームの数| 0-579 | 0-580 |
 |セルの数| 5179 | 72 |
 |データ数| 47650 | 41832 |
 
@@ -31,3 +31,21 @@ https://imagej.net/imagej-wiki-static/StarDist
 1. 細胞サイズが小さいものを削除(細胞の大きさを昇順に並べたが、δに変化があまり見えなく、区切る点が難しい)
 2. 分裂の際の対応
 <img width="181" alt="スクリーンショット 2024-06-14 15 20 14" src="https://github.com/Suzuki-Tkm/CellTrackingAnalysis/assets/140580925/70178f6b-282a-4ee7-954b-f08f14735fb7">
+
+#### 各Pythonファイルの説明
+##### CellDFS.py
+1,0からなる二次元の配列で１を島とした時、DFSでその島の大きさと周の長さを出力する
+→トラッキングのアルゴリズムに悩み断念
+
+##### Image_video.py
+動画をフレームでjpg化
+
+##### Python_to_ImageJ.py
+imageJをpythonから実行
+
+##### Table_matching_degree.py
+二つのテーブルのマッチング率を計算
+→実験データと回答データの分析
+
+#### Tiff_combination.py
+tiffファイルのマージ
