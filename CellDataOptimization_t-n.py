@@ -3,6 +3,18 @@ import math
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
+class Cell:
+  def __init__(self,id , time):
+    self.id = id
+    self.time = time
+
+class Cells:
+  def __init__(self,cell):
+    self.list = [cell]
+
+  def add_cell(self , cell):
+    self.list.append(cell)
+
 # print(pd.__version__)
 
 #     # ユークリッド距離を計算
@@ -23,7 +35,11 @@ input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/
 cells = 72
 
 # 距離の上限を設定
-distance_threshold = 20  # 例として上限を10に設定
+distance_threshold = 6  # 例として上限を10に設定
+
+# cellの大きさを指定
+cell_size = 1000
+
 
 df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除
@@ -33,8 +49,9 @@ df = df.sort_values(by=['POSITION_T','TRACK_ID']) #ソート
 #細胞データを作成（分裂しないと仮定し、細胞数を72に固定.keyをid、valueを実験データid）
 use_cells_Fixed_value = list(df[df['POSITION_T']==0]['TRACK_ID'])
 # cells_Fixed_value = {i+1: use_cells_Fixed_value[i] for i in range(0, cells)}
-cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i in range(0, cells)}
-# cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i] , 0] for i in range(0, cells)}
+# cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i in range(0, cells)}
+cells_Fixed_value = {use_cells_Fixed_value[i]: Cells(Cell(use_cells_Fixed_value[i] , 0)) for i in range(0, cells)}
+ret_cells_Fixed_value = {}
 
 # 確認用
 # cnt = 0 
@@ -45,7 +62,7 @@ cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i 
 
 # print(df['POSITION_T'].max())
 
-for t in range(30):
+for t in range(500):
   print("-------- time ",t," --------")
   print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
   if len(list(cells_Fixed_value.keys())) == 0:
@@ -77,7 +94,10 @@ for t in range(30):
     incPoint = []
 
     for i in decID:
-      before_df = df[df['POSITION_T'] == t-1]
+      temp_cell = cells_Fixed_value[i].list[-1]
+      # print(temp_cell)
+      # before_df = df[df['POSITION_T'] == t-1]
+      before_df = df[df['POSITION_T'] == temp_cell.time]
       dec_ret = before_df[before_df['TRACK_ID'] == i]
       # print(dec_ret)
       x = dec_ret['POSITION_X'].iloc[-1]
@@ -118,17 +138,27 @@ for t in range(30):
 
       diff_list.remove(matching_dec)
 
-      temp_list = cells_Fixed_value[matching_dec]
-      # temp_list.append([matching_inc,t])
-      temp_list.append(matching_inc)
-      cells_Fixed_value[matching_dec] = temp_list
+      cells_Fixed_value[matching_dec].add_cell(Cell(matching_inc,t))
+
       # print(cells_Fixed_value[matching_dec])
+      #キーの変更
       cells_Fixed_value[matching_inc] = cells_Fixed_value.pop(matching_dec)
+
+    # for i in diff_list:
+    #   for t_b in range(2, time_frame_before+1):
+    #     time_frame_before_df = df[df['POSITION_T'] == t-t_b]
+
 
     #消えた細胞を削除
     for i in diff_list:
-      cells_Fixed_value.pop(i)
+      temp_cell = cells_Fixed_value[i].list[-1]
+      before_df = df[df['POSITION_T'] == temp_cell.time]
+      area = dec_ret['AREA'].iloc[-1]
+      if i not in cells_Fixed_value or area < cell_size:
+        ret_cells_Fixed_value = cells_Fixed_value.pop(i)
 
     #この場合どの細胞を追跡対象にするのか
-
-    print(cells_Fixed_value)
+    for i in cells_Fixed_value.values():
+      for k in i.list:
+        print(k.id,end=' , ')
+      print()
