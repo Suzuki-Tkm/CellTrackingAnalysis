@@ -7,7 +7,6 @@ class Cell:
   def __init__(self,id , time):
     self.id = id
     self.time = time
-    self.memory = 0
 
 class Cells:
   def __init__(self,cell):
@@ -39,10 +38,12 @@ cells = 72
 distance_threshold = 6  # 例として上限を10に設定
 
 # cellの大きさを指定
-cell_size = 0
+cell_size = 1000
 
-# 細胞が未発見時の記憶する上限回数
-memory_limit = 1
+# 再マッチングの距離の許容範囲
+distance_threshold_next = 6
+# 許容するフレーム数
+time_next = 3
 
 
 df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA']] #データの抽出
@@ -57,6 +58,8 @@ use_cells_Fixed_value = list(df[df['POSITION_T']==0]['TRACK_ID'])
 cells_Fixed_value = {use_cells_Fixed_value[i]: Cells(Cell(use_cells_Fixed_value[i] , 0)) for i in range(0, cells)}
 ret_cells_Fixed_value = {}
 
+unused_cells = {}
+
 # 確認用
 # cnt = 0 
 # for i in df['POSITION_T']:
@@ -66,7 +69,7 @@ ret_cells_Fixed_value = {}
 
 # print(df['POSITION_T'].max())
 
-for t in range(df['POSITION_T'].max()):
+for t in range(500):
   print("-------- time ",t," --------")
   print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
   if len(list(cells_Fixed_value.keys())) == 0:
@@ -134,13 +137,15 @@ for t in range(df['POSITION_T'].max()):
       # 結果をフィルタリングして上限を超えないペアのみをマッチングリストに追加
       matching = [(r, c) for r, c in zip(row_ind, col_ind) if distance_matrix[r, c] < large_value]
     print("マッチング：",matching)
-    diff_list = decID.copy()
+    diff_list_dec = decID.copy()
+    diff_list_inc = incID.copy()
 
     for i in matching:
       matching_dec = decID[i[0]]
       matching_inc = incID[i[1]]
 
-      diff_list.remove(matching_dec)
+      diff_list_dec.remove(matching_dec)
+      diff_list_inc.remove(matching_inc)
 
       cells_Fixed_value[matching_dec].add_cell(Cell(matching_inc,t))
 
@@ -151,16 +156,34 @@ for t in range(df['POSITION_T'].max()):
     # for i in diff_list:
     #   for t_b in range(2, time_frame_before+1):
     #     time_frame_before_df = df[df['POSITION_T'] == t-t_b]
-
+    
+    #記録用のセル(新規追加されたがマッチングされなかった)
+    print(diff_list_inc)
+    for i in diff_list_inc:
+      # if unused_cells not in i:
+      #   unused_cells[i] = Cells(Cell(i,t))
+      # else:
+      #   unused_cells[i].add_cell(Cell(i,t))
 
     #消えた細胞を削除
-    for i in diff_list:
-      temp_cell = cells_Fixed_value[i].list[-1]
-      before_df = df[df['POSITION_T'] == temp_cell.time]
-      before_df_cell = before_df[before_df['TRACK_ID'] == i]
-      area = before_df_cell['AREA'].iloc[-1]
-      temp_cell.memory = temp_cell.memory + 1
-      if i not in cells_Fixed_value or area < cell_size or temp_cell.memory > memory_limit:
+    # for i in diff_list_dec:
+    #   temp_cell = cells_Fixed_value[i].list[-1]
+    #   before_df = df[df['POSITION_T'] == temp_cell.time]
+    #   before_df_cell = before_df[before_df['TRACK_ID'] == i]
+    #   area = before_df_cell['AREA'].iloc[-1]
+    #   if i not in cells_Fixed_value or area < cell_size:
+    #     #t=2以上前のデータから解析するパターン
+    #     for k in unused_cells:
+    #       c = k.list[-1]
+    #       before_df_tmep = df[df['POSITION_T'] == c.time]
+    #       before_df_c = before_df_tmep[before_df_tmep['TRACK_ID'] == c.id]
+    #       t_temp = before_df_c['POSITION_T'].iloc[-1]
+    #       if t - t_temp < time_next:
+    #         cell_distance = math.sqrt((before_df_c['POSITION_X'].iloc[-1] - before_df_cell['POSITION_X'].iloc[-1])**2 + (before_df_c['POSITION_Y'].iloc[-1] - before_df_cell['POSITION_Y'].iloc[-1])**2)
+    #         if cell_distance < distance_threshold_next:
+    #           cells_Fixed_value[i].add_cell(c)
+    #           cells_Fixed_value[i] = cells_Fixed_value.pop(k)
+    #           continue
         ret_cells_Fixed_value = cells_Fixed_value.pop(i)
 
     #この場合どの細胞を追跡対象にするのか
