@@ -2,6 +2,8 @@ import pandas as pd
 import math
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+import csv
+import datetime
 
 class Cell:
   def __init__(self,id , time):
@@ -44,6 +46,8 @@ cell_size = 0
 # 細胞が未発見時の記憶する上限回数
 memory_limit = 1
 
+now = datetime.datetime.now()
+formatted_time = now.strftime("%H:%M:%S")
 
 df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除
@@ -66,7 +70,7 @@ ret_cells_Fixed_value = {}
 
 # print(df['POSITION_T'].max())
 
-for t in range(df['POSITION_T'].max()):
+for t in range(3):
   print("-------- time ",t," --------")
   print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
   if len(list(cells_Fixed_value.keys())) == 0:
@@ -83,6 +87,7 @@ for t in range(df['POSITION_T'].max()):
     # print(df_temp)
     if id in list(cells_Fixed_value.keys()):
       # print("正常")
+      cells_Fixed_value[id].list[-1].time = t
       decID.remove(id)
     else:
       # print("異常個体id",id)
@@ -163,8 +168,17 @@ for t in range(df['POSITION_T'].max()):
       if i not in cells_Fixed_value or area < cell_size or temp_cell.memory > memory_limit:
         ret_cells_Fixed_value = cells_Fixed_value.pop(i)
 
-    #この場合どの細胞を追跡対象にするのか
+      #書き込みcsv
+  with open('./data/'+formatted_time+'.csv', 'a') as f:
+    writer = csv.writer(f)
+        
+    cells_temp = df_temp.shape[0]
+    if t == 0:
+      writer.writerow(['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
     for i in cells_Fixed_value.values():
-      for k in i.list:
-        print(k.id,end=' , ')
-      print()
+      df_cell = i.list[-1]
+      df_temp = df[df['POSITION_T'] == df_cell.time]
+      df_temp = df_temp[df_temp['TRACK_ID'] == df_cell.id]
+      # print(df_temp.values.tolist())
+      # print(i.list[-1].id)
+      writer.writerow(df_temp.values.tolist()[0])
