@@ -12,8 +12,9 @@ class Cell:
     self.memory = 0
 
 class Cells:
-  def __init__(self,cell):
+  def __init__(self,cell,id):
     self.list = [cell]
+    self.id = id
 
   def add_cell(self , cell):
     self.list.append(cell)
@@ -38,13 +39,13 @@ input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/
 cells = 72
 
 # 距離の上限を設定
-distance_threshold = 10  # 例として上限を10に設定
+distance_threshold = 1  # 例として上限を10に設定
 
 # cellの大きさを指定
 cell_size = 0
 
 # 細胞が未発見時の記憶する上限回数
-memory_limit = 3
+memory_limit = 10
 
 now = datetime.datetime.now()
 formatted_time = now.strftime("%H:%M:%S")
@@ -58,7 +59,7 @@ df = df.sort_values(by=['POSITION_T','TRACK_ID']) #ソート
 use_cells_Fixed_value = list(df[df['POSITION_T']==0]['TRACK_ID'])
 # cells_Fixed_value = {i+1: use_cells_Fixed_value[i] for i in range(0, cells)}
 # cells_Fixed_value = {use_cells_Fixed_value[i]: [use_cells_Fixed_value[i]] for i in range(0, cells)}
-cells_Fixed_value = {use_cells_Fixed_value[i]: Cells(Cell(use_cells_Fixed_value[i] , 0)) for i in range(0, cells)}
+cells_Fixed_value = {use_cells_Fixed_value[i]: Cells(Cell(use_cells_Fixed_value[i] , 0) , i) for i in range(0, cells)}
 ret_cells_Fixed_value = []
 
 # 確認用
@@ -70,7 +71,7 @@ ret_cells_Fixed_value = []
 
 # print(df['POSITION_T'].max())
 
-for t in range(30):
+for t in range(df['POSITION_T'].max()):
   print("-------- time ",t," --------")
   print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
   if len(list(cells_Fixed_value.keys())) == 0:
@@ -174,18 +175,21 @@ for t in range(30):
         
     cells_temp = df_temp.shape[0]
     if t == 0:
-      writer.writerow(['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
+      writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
     for i in cells_Fixed_value.values():
       df_cell = i.list[-1]
       df_temp = df[df['POSITION_T'] == df_cell.time]
       df_temp = df_temp[df_temp['TRACK_ID'] == df_cell.id]
       # print(df_temp.values.tolist())
       # print(i.list[-1].id)
-      writer.writerow(df_temp.values.tolist()[0])
+      l_temp = []
+      l_temp.append(i.id)
+      l_temp = l_temp + df_temp.values.tolist()[0]
+      writer.writerow(l_temp)
 
 with open('./data/DeletedCells'+formatted_time+'.csv', 'a') as m:
   writer = csv.writer(m)
-  writer.writerow(['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
+  writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
   # print(ret_cells_Fixed_value)
   for i in ret_cells_Fixed_value:
     df_cells = i.list
@@ -193,6 +197,6 @@ with open('./data/DeletedCells'+formatted_time+'.csv', 'a') as m:
     for cell in df_cells:
       df_temp = df[df['POSITION_T'] == cell.time]
       df_temp = df_temp[df_temp['TRACK_ID'] == cell.id]
-      writer.writerow(df_temp.values.tolist()[0])
+      writer.writerow([i.id] + df_temp.values.tolist()[0])
 
     writer.writerow(["-","-","-","-","-"])
