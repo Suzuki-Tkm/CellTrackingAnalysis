@@ -1,27 +1,33 @@
-import numpy as np
-from scipy.optimize import linear_sum_assignment
+import pandas as pd
 
-# 座標リストを定義
-A = np.array([])
-B = np.array([[15, 15], [25, 25], [35, 35]])
+# サンプルデータの作成
+df1 = pd.DataFrame({
+    'ID': [1, 2, 3, 4],
+    'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+    'Age': [25, 30, 35, 40]
+})
 
-# ユークリッド距離を計算
-def euclidean_distance_matrix(A, B):
-    return np.linalg.norm(A[:, np.newaxis] - B, axis=2)
+df2 = pd.DataFrame({
+    'ID': [1, 2, 3, 4],
+    'Name': ['Alice', 'Bob', 'Charlie', 'Edward'],
+    'Age': [25, 30, 35, 45]
+})
 
-# 距離行列を計算
-distance_matrix = euclidean_distance_matrix(A, B)
+# カラムのマッチング度合いを計算する関数
+def calculate_matching(df1, df2, key_column):
+    merged_df = pd.merge(df1, df2, on=key_column, how='inner', suffixes=('_df1', '_df2'))
+    total_rows = len(merged_df)
+    
+    matching = {}
+    for column in df1.columns:
+        if column != key_column:
+            match_count = (merged_df[f'{column}_df1'] == merged_df[f'{column}_df2']).sum()
+            matching[column] = match_count / total_rows if total_rows > 0 else 0.0
+    
+    return matching
 
-# 距離の上限を設定
-distance_threshold = 10  # 例として上限を10に設定
+# IDカラムをキーにして一致率を計算
+key_column = 'ID'
+matching_result = calculate_matching(df1, df2, key_column)
 
-# 上限を超える距離を非常に大きな値に設定
-large_value = 1e6
-distance_matrix[distance_matrix > distance_threshold] = large_value
-
-# ハンガリアン法を使用して最小コストマッチングを見つける
-row_ind, col_ind = linear_sum_assignment(distance_matrix)
-
-# 結果をフィルタリングして上限を超えないペアのみをマッチングリストに追加
-matching = [(r, c) for r, c in zip(row_ind, col_ind) if distance_matrix[r, c] < large_value]
-print(matching)
+print(matching_result)
