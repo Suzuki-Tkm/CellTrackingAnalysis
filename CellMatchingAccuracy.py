@@ -69,3 +69,38 @@ for index, row in AnsData.iterrows():
 
 # print(AnsData)
 # print(MyData)
+#dfのリネーム
+MyData = MyData.rename(columns={'POSITION_X': 'Gx', 'POSITION_Y': 'Gy', 'AREA': 'Size' ,'POSITION_T': 'Time'})
+print("----------------------")
+print(MyData)
+
+def calculate_matching_with_tolerance(df1, df2, key_column, columns_to_compare, tolerance_dict):
+    common_ids = set(df1[key_column].unique()).intersection(set(df2[key_column].unique()))
+    
+    matching = {}
+    
+    for column in columns_to_compare:
+        if column in df1.columns and column in df2.columns:
+            match_count = 0
+            total_rows = 0
+            tolerance = tolerance_dict.get(column, 0)
+            
+            for id_value in common_ids:
+                df1_filtered = df1[df1[key_column] == id_value]
+                df2_filtered = df2[df2[key_column] == id_value]
+                
+                if not df1_filtered.empty and not df2_filtered.empty:
+                    total_rows += 1
+                    if abs(df1_filtered[column].values[0] - df2_filtered[column].values[0]) <= tolerance:
+                        match_count += 1
+            
+            matching[column] = match_count / total_rows if total_rows > 0 else 0.0
+    
+    return matching
+
+key_column = 'unique_id'
+columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID' , 'Time']
+tolerance_dict = {'Size': 1500, 'Gx': 10, 'Gy': 10 , 'ID': 0 , 'Time' : 0}
+
+matching_result = calculate_matching_with_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
+print(matching_result)
