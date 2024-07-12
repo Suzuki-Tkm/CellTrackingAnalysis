@@ -8,6 +8,8 @@ MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/09:27:40.csv
 Ans_matching = []
 My_matching = []
 
+cells = 72
+
 AnsDf = AnsData[AnsData['Time']==0]
 MyDf = MyData[MyData['POSITION_T']==0.0]
 
@@ -45,5 +47,25 @@ for i, j in zip(row_ind, col_ind):
     Ans_matching.append(AnsDf['ID'].iloc[i])
     My_matching.append(MyDf['ID'].iloc[j])
 
-print(Ans_matching)
-print(My_matching)
+Ans_my_matching = {index: value for index, value in zip(My_matching,Ans_matching)}
+
+# print(Ans_matching)
+# print(My_matching)
+
+########################解析########################
+
+#idの変更
+MyData['ID'] = MyData['ID'].map(Ans_my_matching)
+print(MyData)
+
+#ユニークなIDを付与
+for index, row in MyData.iterrows():
+    IDMagnification = cells * (int(row['POSITION_T']) + 1) + row['ID']
+    MyData.at[index, 'unique_id'] = int(IDMagnification)
+
+for index, row in AnsData.iterrows():
+    IDMagnification = cells * (row['Time'] + 1) + row['ID']
+    AnsData.at[index, 'unique_id'] = int(IDMagnification)
+
+# print(AnsData)
+# print(MyData)
