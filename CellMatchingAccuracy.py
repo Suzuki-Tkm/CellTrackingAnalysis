@@ -18,17 +18,37 @@ MyDf = MyData[MyData['POSITION_T']==0.0]
 AnsDf['distance_from_origin'] = np.sqrt(AnsDf['Gx']**2 + AnsDf['Gy']**2)
 MyDf['distance_from_origin'] = np.sqrt(MyDf['POSITION_X']**2 + MyDf['POSITION_Y']**2)
 
-AnsDf_closest_point = AnsDf.loc[AnsDf['distance_from_origin'].idxmax()]
-MyDf_closest_point = MyDf.loc[MyDf['distance_from_origin'].idxmax()]
-print(AnsDf_closest_point)
-print(MyDf_closest_point)
+# x座標でソートしてから、y座標でソート
+AnsDf_sorted = AnsDf.sort_values(by=['Gx', 'Gy'])
 
-scale_factor_x = MyDf_closest_point['POSITION_X'] / AnsDf_closest_point['Gx']
-scale_factor_y = MyDf_closest_point['POSITION_Y'] / AnsDf_closest_point['Gy']
+# 1番目と2番目に小さい座標を取得
+AnsDf_closest_y1 = AnsDf_sorted.iloc[0]
+AnsDf_closest_y2 = AnsDf_sorted.iloc[1]
+
+MyDf_sorted = MyDf.sort_values(by='distance_from_origin')
+MyDf_sorted = MyDf_sorted[:2]
+MyDf_sorted = MyDf_sorted.sort_values(by=['POSITION_X', 'POSITION_Y'])
+MyDf_closest_y1 = MyDf_sorted.iloc[0]
+MyDf_closest_y2 = MyDf_sorted.iloc[1]
+
+# print(AnsDf_closest_y1)
+# print(AnsDf_closest_y2)
+
+# print(MyDf_closest_y1)
+# print(MyDf_closest_y2)
+# 差分を計算
+AnsDf_diff_Y = AnsDf_closest_y2['Gy'] - AnsDf_closest_y1['Gy']
+MyDf_diff_Y = MyDf_closest_y2['POSITION_Y'] - MyDf_closest_y1['POSITION_Y']
+
+# print(AnsDf_diff_Y)
+# print(MyDf_diff_Y)
+scale_factor_y =  MyDf_diff_Y / AnsDf_diff_Y
+
+print("---------------F(s)=",scale_factor_y,"---------------")
 
 #mydfをn倍
-MyDf['POSITION_X'] = MyDf['POSITION_X'] * scale_factor_x
-MyDf['POSITION_Y'] = MyDf['POSITION_Y'] * scale_factor_y
+# MyDf['POSITION_X'] = MyDf['POSITION_X'] * scale_factor_x
+# MyDf['POSITION_Y'] = MyDf['POSITION_Y'] * scale_factor_y
 
 # 最短経路
 def euclidean_distance_matrix(A, B):
@@ -100,7 +120,7 @@ def calculate_matching_with_tolerance(df1, df2, key_column, columns_to_compare, 
 
 key_column = 'unique_id'
 columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID' , 'Time']
-tolerance_dict = {'Size': 1500, 'Gx': 10, 'Gy': 10 , 'ID': 0 , 'Time' : 0}
+tolerance_dict = {'Size': 15, 'Gx': 10, 'Gy': 10 , 'ID': 0 , 'Time' : 0}
 
 matching_result = calculate_matching_with_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
 print(matching_result)
