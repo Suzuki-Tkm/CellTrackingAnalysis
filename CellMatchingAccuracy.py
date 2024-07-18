@@ -47,8 +47,11 @@ scale_factor_y =  MyDf_diff_Y / AnsDf_diff_Y
 print("---------------F(s)=",scale_factor_y,"---------------")
 
 #mydfをn倍
-# MyDf['POSITION_X'] = MyDf['POSITION_X'] * scale_factor_x
-# MyDf['POSITION_Y'] = MyDf['POSITION_Y'] * scale_factor_y
+MyDf['POSITION_X'] = MyDf['POSITION_X'] / scale_factor_y
+MyDf['POSITION_Y'] = MyDf['POSITION_Y'] / scale_factor_y
+MyDf['AREA'] = MyDf['AREA'] / (scale_factor_y * scale_factor_y)
+
+print(MyDf)
 
 # 最短経路
 def euclidean_distance_matrix(A, B):
@@ -78,6 +81,11 @@ Ans_my_matching = {index: value for index, value in zip(My_matching,Ans_matching
 MyData['ID'] = MyData['ID'].map(Ans_my_matching)
 print(MyData)
 
+#myDataをn倍
+MyData['POSITION_X'] = MyData['POSITION_X'] / scale_factor_y
+MyData['POSITION_Y'] = MyData['POSITION_Y'] / scale_factor_y
+MyData['AREA'] = MyData['AREA'] / (scale_factor_y * scale_factor_y)
+
 #ユニークなIDを付与
 for index, row in MyData.iterrows():
     IDMagnification = cells * (int(row['POSITION_T']) + 1) + row['ID']
@@ -94,33 +102,41 @@ MyData = MyData.rename(columns={'POSITION_X': 'Gx', 'POSITION_Y': 'Gy', 'AREA': 
 print("----------------------")
 print(MyData)
 
-def calculate_matching_with_tolerance(df1, df2, key_column, columns_to_compare, tolerance_dict):
+def calculate_matching_with_percentage_tolerance(df1, df2, key_column, columns_to_compare, tolerance_dict):
+    # 共通のIDを取得
     common_ids = set(df1[key_column].unique()).intersection(set(df2[key_column].unique()))
     
     matching = {}
     
+    # 各カラムごとにマッチングを計算
     for column in columns_to_compare:
         if column in df1.columns and column in df2.columns:
             match_count = 0
             total_rows = 0
             tolerance = tolerance_dict.get(column, 0)
             
+            # 各共通IDごとにフィルタリングして比較
             for id_value in common_ids:
                 df1_filtered = df1[df1[key_column] == id_value]
                 df2_filtered = df2[df2[key_column] == id_value]
                 
                 if not df1_filtered.empty and not df2_filtered.empty:
                     total_rows += 1
-                    if abs(df1_filtered[column].values[0] - df2_filtered[column].values[0]) <= tolerance:
+                    value1 = df1_filtered[column].values[0]
+                    value2 = df2_filtered[column].values[0]
+                    
+                    # 割合誤差の範囲で比較
+                    if (1.0 - tolerance) <= (value1 / value2) <= (1.0 + tolerance):
                         match_count += 1
             
+            # マッチング度合いを計算
             matching[column] = match_count / total_rows if total_rows > 0 else 0.0
     
     return matching
 
 key_column = 'unique_id'
-columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID' , 'Time']
-tolerance_dict = {'Size': 15, 'Gx': 10, 'Gy': 10 , 'ID': 0 , 'Time' : 0}
+columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID']
+tolerance_dict = {'Size': 0.1, 'Gx': 0.05, 'Gy': 0.05 , 'ID': 0}
 
-matching_result = calculate_matching_with_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
+matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
 print(matching_result)
