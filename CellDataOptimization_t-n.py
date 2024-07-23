@@ -39,18 +39,21 @@ input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/
 cells = 72
 
 # 距離の上限を設定
-distance_threshold = 1  # 例として上限を10に設定
+distance_threshold = 5  # 例として上限を10に設定
 
 # cellの大きさを指定
 cell_size = 0
 
 # 細胞が未発見時の記憶する上限回数
-memory_limit = 10
+memory_limit = 6
 
 now = datetime.datetime.now()
 formatted_time = now.strftime("%H:%M:%S")
+# output = './data/'+formatted_time+'.csv'
+output = './data/T11.csv'
+output_del = './data/T11_del.csv'
 
-df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA']] #データの抽出
+df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除
 df = df.apply(pd.to_numeric, errors='coerce') #データの数値化
 df = df.sort_values(by=['POSITION_T','TRACK_ID']) #ソート
@@ -170,12 +173,12 @@ for t in range(df['POSITION_T'].max()):
         ret_cells_Fixed_value.append(cells_Fixed_value.pop(i))
 
       #書き込みcsv
-  with open('./data/'+formatted_time+'.csv', 'a') as f:
+  with open(output, 'a') as f:
     writer = csv.writer(f)
         
     cells_temp = df_temp.shape[0]
     if t == 0:
-      writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
+      writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER'])
     for i in cells_Fixed_value.values():
       df_cell = i.list[-1]
       df_temp = df[df['POSITION_T'] == df_cell.time]
@@ -187,9 +190,9 @@ for t in range(df['POSITION_T'].max()):
       l_temp = l_temp + df_temp.values.tolist()[0]
       writer.writerow(l_temp)
 
-with open('./data/DeletedCells'+formatted_time+'.csv', 'a') as m:
+with open(output_del, 'a') as m:
   writer = csv.writer(m)
-  writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA'])
+  writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER'])
   # print(ret_cells_Fixed_value)
   for i in ret_cells_Fixed_value:
     df_cells = i.list

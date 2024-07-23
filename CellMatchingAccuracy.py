@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast/回答データと実験データ - 回答データ.csv')
-MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/09:27:40.csv')
+MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/T7.csv')
 
 Ans_matching = []
 My_matching = []
@@ -84,6 +84,7 @@ print(MyData)
 #myDataをn倍
 MyData['POSITION_X'] = MyData['POSITION_X'] / scale_factor_y
 MyData['POSITION_Y'] = MyData['POSITION_Y'] / scale_factor_y
+MyData['PERIMETER'] = MyData['PERIMETER'] / scale_factor_y
 MyData['AREA'] = MyData['AREA'] / (scale_factor_y * scale_factor_y)
 
 #ユニークなIDを付与
@@ -98,7 +99,7 @@ for index, row in AnsData.iterrows():
 # print(AnsData)
 # print(MyData)
 #dfのリネーム
-MyData = MyData.rename(columns={'POSITION_X': 'Gx', 'POSITION_Y': 'Gy', 'AREA': 'Size' ,'POSITION_T': 'Time'})
+MyData = MyData.rename(columns={'POSITION_X': 'Gx', 'POSITION_Y': 'Gy', 'AREA': 'Size' ,'POSITION_T': 'Time', 'PERIMETER' : 'Len'})
 print("----------------------")
 print(MyData)
 
@@ -135,8 +136,8 @@ def calculate_matching_with_percentage_tolerance(df1, df2, key_column, columns_t
     return matching
 
 key_column = 'unique_id'
-columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID']
-tolerance_dict = {'Size': 0.1, 'Gx': 0.05, 'Gy': 0.05 , 'ID': 0}
+columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID','Len']
+tolerance_dict = {'Size': 0.05, 'Gx': 0.05, 'Gy': 0.05 , 'ID': 0 , 'Len' : 0.05}
 
 matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
 print(matching_result)
