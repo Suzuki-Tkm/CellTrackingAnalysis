@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast/回答データと実験データ - 回答データ.csv')
-MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/T7.csv')
+MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/T2.csv')
 
 Ans_matching = []
 My_matching = []
@@ -102,7 +102,7 @@ for index, row in AnsData.iterrows():
 MyData = MyData.rename(columns={'POSITION_X': 'Gx', 'POSITION_Y': 'Gy', 'AREA': 'Size' ,'POSITION_T': 'Time', 'PERIMETER' : 'Len'})
 print("----------------------")
 print(MyData)
-
+# df1とdf2のマッチング計算
 def calculate_matching_with_percentage_tolerance(df1, df2, key_column, columns_to_compare, tolerance_dict):
     # 共通のIDを取得
     common_ids = set(df1[key_column].unique()).intersection(set(df2[key_column].unique()))
@@ -135,9 +135,29 @@ def calculate_matching_with_percentage_tolerance(df1, df2, key_column, columns_t
     
     return matching
 
+# df1とdf2のフレームごとのマッチング計算
+def calculate_matching_ratio(data1, data2, output_file , c):
+    df1 = pd.DataFrame(data1)
+    df2 = pd.DataFrame(data2)
+
+    max_error = (df1[c] - df2[c]).abs().max()
+
+    average1 = df1.groupby("Time")[c].mean()
+    average2 = df2.groupby("Time")[c].mean()
+
+    diff = (average1 - average2).abs()
+
+    ratio = 1 - (diff / max_error)
+
+    result = ratio.reset_index()
+    result.columns = ["Time", "マッチング割合"]
+    result.to_csv(output_file, index=False)
+
 key_column = 'unique_id'
 columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID','Len']
-tolerance_dict = {'Size': 0.05, 'Gx': 0.05, 'Gy': 0.05 , 'ID': 0 , 'Len' : 0.05}
+tolerance_dict = {'Size': 0.075, 'Gx': 0.1, 'Gy': 0.1 , 'ID': 0 , 'Len' : 0.1}
 
-matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
-print(matching_result)
+# matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
+# print(matching_result)
+
+calculate_matching_ratio(MyData , AnsData , "data/T1_frame.csv" , "Size")
