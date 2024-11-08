@@ -22,8 +22,8 @@ for cell_id in cell_ids:
     plt.plot(cell_data['POSITION_T'], cell_data['angle_change'], marker='o', label=f'Cell {cell_id}')
 
 plt.xlabel('Time')
-plt.ylabel('Angle Change (degrees)')
-plt.title('Angle Change of Cells Over Time (First 5 Cells)')
+plt.ylabel('Angle Change (Radius)')
+plt.title('Angle Change of Cells Over Time')
 plt.legend()
 plt.grid(True)
 plt.show()
