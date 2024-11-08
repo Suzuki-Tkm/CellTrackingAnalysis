@@ -1,14 +1,16 @@
 import pandas as pd
 import numpy as np
+import csv
 from scipy.optimize import linear_sum_assignment
 
-AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast/回答データと実験データ - 回答データ.csv')
-MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/T2.csv')
-
+AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/120_slowCellData.csv')
+MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/120-slow-big/T0.csv')
+output = "data/120-slow-big/T0_frame.csv"
 Ans_matching = []
 My_matching = []
 
-cells = 72
+cells = 288
+t = 0.1
 
 AnsDf = AnsData[AnsData['Time']==0]
 MyDf = MyData[MyData['POSITION_T']==0.0]
@@ -129,16 +131,14 @@ def calculate_matching_with_percentage_tolerance(df1, df2, key_column, columns_t
                     # 割合誤差の範囲で比較
                     if (1.0 - tolerance) <= (value1 / value2) <= (1.0 + tolerance):
                         match_count += 1
-            
-            # マッチング度合いを計算
             matching[column] = match_count / total_rows if total_rows > 0 else 0.0
     
     return matching
 
 # df1とdf2のフレームごとのマッチング計算
 def calculate_matching_ratio(data1, data2, output_file , c):
-    df1 = pd.DataFrame(data1)
-    df2 = pd.DataFrame(data2)
+    df1 = data1
+    df2 = data2
 
     max_error = (df1[c] - df2[c]).abs().max()
 
@@ -153,11 +153,25 @@ def calculate_matching_ratio(data1, data2, output_file , c):
     result.columns = ["Time", "マッチング割合"]
     result.to_csv(output_file, index=False)
 
+def count_condition_met(df1, df2, tolerance=t, output_file='result.csv'):
+    merged_df = pd.merge(df1, df2, on=['unique_id', 'Time'], suffixes=('_1', '_2'))
+
+    merged_df['条件を満たす'] = merged_df.apply(
+        lambda row: (1.0 - tolerance) <= (row['Size_1'] / row['Size_2']) <= (1.0 + tolerance), axis=1)
+
+    count_by_t = merged_df.groupby('Time')['条件を満たす'].sum()
+
+    result = count_by_t / 288
+
+    result.to_csv(output_file, header=['カウント_288で割る'])
+
+    return result
+
 key_column = 'unique_id'
-columns_to_compare = ['Size', 'Gx', 'Gy' , 'ID','Len']
-tolerance_dict = {'Size': 0.075, 'Gx': 0.1, 'Gy': 0.1 , 'ID': 0 , 'Len' : 0.1}
+columns_to_compare = ['Size']
+tolerance_dict = {'Size': t}
 
-# matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
-# print(matching_result)
+matching_result = calculate_matching_with_percentage_tolerance(MyData, AnsData, key_column, columns_to_compare, tolerance_dict)
+print(matching_result)
 
-calculate_matching_ratio(MyData , AnsData , "data/T1_frame.csv" , "Size")
+result = count_condition_met(MyData, AnsData, tolerance=t , output_file=output)

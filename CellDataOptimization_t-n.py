@@ -33,27 +33,27 @@ def euclidean_distance_matrix(A, B):
     # ユークリッド距離行列を計算
     return np.linalg.norm(A[:, np.newaxis] - B, axis=2)
 
-input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast/回答データと実験データ - 実験データ.csv')
+input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast-Original.csv')
 
 #細胞数
 cells = 72
 
 # 距離の上限を設定
-distance_threshold = 5  # 例として上限を10に設定
+distance_threshold = 2.5  # 例として上限を10に設定
 
 # cellの大きさを指定
 cell_size = 0
 
 # 細胞が未発見時の記憶する上限回数
-memory_limit = 6
+memory_limit = 1
 
 now = datetime.datetime.now()
 formatted_time = now.strftime("%H:%M:%S")
 # output = './data/'+formatted_time+'.csv'
-output = './data/T11.csv'
-output_del = './data/T11_del.csv'
+output = './data/60-fast-ang/ang.csv'
+output_del = './data/60-fast-ang/ang-l.csv'
 
-df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER']] #データの抽出
+df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER','ELLIPSE_MAJOR','ELLIPSE_MINOR','ELLIPSE_THETA',	'ELLIPSE_ASPECTRATIO']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除
 df = df.apply(pd.to_numeric, errors='coerce') #データの数値化
 df = df.sort_values(by=['POSITION_T','TRACK_ID']) #ソート
@@ -72,9 +72,9 @@ ret_cells_Fixed_value = []
 #     cnt += 1
 # print(cnt)
 
-# print(df['POSITION_T'].max())
+print(df['POSITION_T'].max())
 
-for t in range(df['POSITION_T'].max()):
+for t in range(int(df['POSITION_T'].max())):
   print("-------- time ",t," --------")
   print("解析中の細胞数：",len(list(cells_Fixed_value.keys())))
   if len(list(cells_Fixed_value.keys())) == 0:
@@ -178,7 +178,7 @@ for t in range(df['POSITION_T'].max()):
         
     cells_temp = df_temp.shape[0]
     if t == 0:
-      writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER'])
+      writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER','ELLIPSE_MAJOR','ELLIPSE_MINOR','ELLIPSE_THETA',	'ELLIPSE_ASPECTRATIO'])
     for i in cells_Fixed_value.values():
       df_cell = i.list[-1]
       df_temp = df[df['POSITION_T'] == df_cell.time]
@@ -192,7 +192,7 @@ for t in range(df['POSITION_T'].max()):
 
 with open(output_del, 'a') as m:
   writer = csv.writer(m)
-  writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER'])
+  writer.writerow(['ID','TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER','ELLIPSE_MAJOR','ELLIPSE_MINOR','ELLIPSE_THETA',	'ELLIPSE_ASPECTRATIO'])
   # print(ret_cells_Fixed_value)
   for i in ret_cells_Fixed_value:
     df_cells = i.list
