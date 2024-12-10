@@ -17,7 +17,7 @@ def combine_to_multi_page_tiff(folder_path, output_file):
     print(f"Combined {len(tiff_files)} TIFF files into {output_file}")
 
 # tiffフォルダの指定
-folder_path = "/Users/apple/研究/data/小田切先生研究データ/Experiment/zigzag/DPC"
+folder_path = "/Users/apple/研究/data/小田切先生研究データ/Experiment/zigzag/32000cells 1day_密"
 # tiffのファイルの指定
-output_file = "/Users/apple/研究/data/小田切先生研究データ/Experiment/zigzag/DPC.tiff"
+output_file = "/Users/apple/研究/data/小田切先生研究データ/Experiment/zigzag/32000cells 1day_密.tiff"
 combine_to_multi_page_tiff(folder_path, output_file)
