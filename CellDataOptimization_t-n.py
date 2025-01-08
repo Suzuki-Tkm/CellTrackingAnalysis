@@ -33,25 +33,25 @@ def euclidean_distance_matrix(A, B):
     # ユークリッド距離行列を計算
     return np.linalg.norm(A[:, np.newaxis] - B, axis=2)
 
-input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/60-fast-Original.csv')
+input = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/Experiment/16000cells1day_spots_stardist.csv')
 
 #細胞数
-cells = 72
+cells = 37
 
 # 距離の上限を設定
-distance_threshold = 2.5  # 例として上限を10に設定
+distance_threshold = 5  # 例として上限を10に設定
 
 # cellの大きさを指定
 cell_size = 0
 
 # 細胞が未発見時の記憶する上限回数
-memory_limit = 1
+memory_limit = 2
 
 now = datetime.datetime.now()
 formatted_time = now.strftime("%H:%M:%S")
 # output = './data/'+formatted_time+'.csv'
-output = './data/60-fast-ang/ang.csv'
-output_del = './data/60-fast-ang/ang-l.csv'
+output = '/Users/apple/研究/data/小田切先生研究データ/Experiment/ang_16000cells1day_spots_stardist.csv'
+output_del = '/Users/apple/研究/data/小田切先生研究データ/Experiment/amg_del_16000cells1day_spots_stardist.csvv'
 
 df = input[['TRACK_ID','POSITION_X','POSITION_Y','POSITION_T','AREA','PERIMETER','ELLIPSE_MAJOR','ELLIPSE_MINOR','ELLIPSE_THETA',	'ELLIPSE_ASPECTRATIO']] #データの抽出
 df = df.drop(df.index[[0,1,2]]) #利用しない行の削除

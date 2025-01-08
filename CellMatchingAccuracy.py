@@ -3,13 +3,13 @@ import numpy as np
 import csv
 from scipy.optimize import linear_sum_assignment
 
-AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/120_slowCellData.csv')
-MyData = pd.read_csv('/Users/apple/研究/CellTrackingAnalysis/data/120-slow-big/T0.csv')
-output = "data/120-slow-big/T0_frame.csv"
+AnsData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/Experiment/ang_16000cells1day_spots_stardist.csv')
+MyData = pd.read_csv('/Users/apple/研究/data/小田切先生研究データ/Experiment/16000cells1day_spots_stardist.csv')
+output = "/Users/apple/研究/data/小田切先生研究データ/Experiment/output_16000cells1day_spots_stardist.csv"
 Ans_matching = []
 My_matching = []
 
-cells = 288
+cells = 21
 t = 0.1
 
 AnsDf = AnsData[AnsData['Time']==0]
